@@ -7,7 +7,7 @@ Matching techniques for epidemiological observational studies as carried out in 
 
 ## Citing this work:
 
-A. Kline, Y. Luo, PsmPy:  *A  Package  for  Retrospective  Cohort Matching  in  Python*, (under review at EMBC 2022)
+Kline, Adrienne, and Yuan Luo. "PsmPy: a package for retrospective cohort matching in python." 2022 44th Annual International Conference of the IEEE Engineering in Medicine & Biology Society (EMBC). IEEE, 2022.
 
 ---
 
