@@ -7,7 +7,7 @@ Matching techniques for epidemiological observational studies as carried out in 
 
 ## Citing this work:
 
-Kline, Adrienne, and Yuan Luo. "PsmPy: a package for retrospective cohort matching in python." 2022 44th Annual International Conference of the IEEE Engineering in Medicine & Biology Society (EMBC). IEEE, 2022.
+A. Kline and Y. Luo, *PsmPy: A Package for Retrospective Cohort Matching in Python,* 2022 44th Annual International Conference of the IEEE Engineering in Medicine & Biology Society (EMBC), 2022, pp. 1354-1357, doi: 10.1109/EMBC48229.2022.9871333.
 
 ---
 
@@ -32,30 +32,28 @@ $ pip install psmpy
 * [Matching algorithm](#matching-algorithm)
 * [Graphical Outputs](#graphical-outputs)
 * [Extra Attributes](#extra-attributes)
+* [Cohen D Function](#cohen-function)
 * [Conclusion](#conclusion)
 
 ----
 
 # Data Prep
 
-
+# Import psmpy class and functions
 ```python
 # import relevant libraries
+from psmpy import PsmPy
+from psmpy.functions import cohenD
+from psmpy.plotting import *
 sns.set(rc={'figure.figsize':(10,8)}, font_scale = 1.3)
 ```
+----
 
 ```python
 # read in your data
 data = pd.read_csv(path)
 ```
 ----
-
-# Import psmpy class and functions
-```python
-from psmpy import PsmPy
-from psmpy.functions import cohenD
-from psmpy.plotting import *
-```
 
 # Initialize PsmPy Class
 
@@ -130,7 +128,7 @@ psm.knn_matched_12n(matcher='propensity_logit', how_many=1)
 Plot the distribution of the propensity scores (or logits) for the two groups side by side.
 
 ```python
-psm.plot_match(Title='Side by side matched controls', Ylabel='Number ofpatients', Xlabel= 'Propensity logit',names = ['treatment', 'control'],save=True)
+psm.plot_match(Title='Side by side matched controls', Ylabel='Number ofpatients', Xlabel= 'Propensity logit',names = ['treatment', 'control'], colors=['#E69F00', '#56B4E9'] ,save=True)
 ```
 
 **Note:**
@@ -139,15 +137,19 @@ psm.plot_match(Title='Side by side matched controls', Ylabel='Number ofpatients'
 * `Ylabel` -  'Number  of  patients'  (default),  string,  labelfor y-axis
 * `Xlabel` -  'Propensity logit' (default), string, label for x-axis 
 * `names` - ['treatment', 'control'] (default), list of strings for legend
+* `colors` - ['#E69F00', '#56B4E9'] (default) plotting colors default 
 * `save` -  False  (default),  saves  the  figure  generated  to current working directory if True
 
 ## Plot the effect sizes 
 
 ```python
-psm.effect_size_plot(save=False)
+psm.effect_size_plot(title='Standardized Mean differences accross covariates before and after matching', before_color='#FCB754', after_color='#3EC8FB', save=False)
 ```
 
 **Note:**
+* `title` - Title of the plot 
+* `before_color` - color (hex) for before matching effect size 
+* `after_color` - color (hex) for after macthing effect size
 * `save` -  False  (default),  saves  the  figure  generated  tocurrent working directory if True
 
 ---
@@ -268,6 +270,20 @@ psm.effect_size
     </tr>
   </tbody>
 </table>
+
+---
+# Cohen D Function
+A function to calculate effect size (Cohen D) can be imported alone should the user have a need for it. A floating point number is returned.
+
+```python
+from psmpy.functions import cohenD
+
+cohenD(df, treatment, metricName)
+```
+
+* `df` - dataframe with data under investigation
+* `treatment` - name of binary treatment/intervention under investigation
+* `metricName` - variable user wishes to check the influence of on treatment/intervention
 
 ---
 
