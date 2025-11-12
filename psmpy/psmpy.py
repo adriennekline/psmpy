@@ -3,6 +3,7 @@ from .functions import cohenD
 import numpy as np
 from scipy.special import logit, expit
 from sklearn.neighbors import NearestNeighbors
+from sklearn.neighbors import KDTree
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
@@ -207,7 +208,7 @@ class PsmPy:
             predicted_data_treatment = self.predicted_data[self.predicted_data[self.treatment] == 1]
             # return predicted_data
 
-    def knn_matched(self, matcher='propensity_logit', replacement=False, caliper=None, drop_unmatched=True):
+    def kdtree_matched(self, matcher='propensity_logit', replacement=False, caliper=None, drop_unmatched=True):
         """
         knn_matched -- Match data using k-nn algorithm
         Parameters
@@ -243,12 +244,18 @@ class PsmPy:
             min_pred, major_pred = predicted_data_control, predicted_data_treatment
             major_pred_rstindx = major_pred.reset_index(drop=True)
             minor_pred_rstindx = min_pred.reset_index(drop=True)
-
+        
+        # --- after ---
+        X_major = major_pred_rstindx[[matcher]].to_numpy()          # shape (N, 1)
+        X_minor = minor_pred_rstindx[[matcher]].to_numpy()          # shape (M, 1)
+        tree = KDTree(X_major, leaf_size=40, metric='euclidean')
+        distances, indexes = tree.query(X_minor, k=len(major_pred_rstindx), return_distance=True)
         # need to fit KNN with larger class
-        knn = NearestNeighbors(n_neighbors=len(major_pred_rstindx), p=2)
-        knn.fit(major_pred_rstindx[[matcher]].to_numpy())
-        distances, indexes = knn.kneighbors(
-            minor_pred_rstindx[[matcher]].to_numpy(), n_neighbors=len(major_pred_rstindx))
+        # knn = NearestNeighbors(n_neighbors=len(major_pred_rstindx), p=2)
+        # knn.fit(major_pred_rstindx[[matcher]].to_numpy())
+        # distances, indexes = knn.kneighbors(
+        #     minor_pred_rstindx[[matcher]].to_numpy(), n_neighbors=len(major_pred_rstindx))
+
 #         self.distances = distances
 #         self.indexes = indexes
 
@@ -353,11 +360,15 @@ class PsmPy:
             except:
                 ID_match.append(np.nan)
 
-        indexes_nonull = list(filter(None, indices_for_match))
-        major_matched = major_pred_rstindx.take(indexes_nonull)
+        #indexes_nonull = list(filter(None, indices_for_match))
+        indexes_nonull = [i for i in indices_for_match if i is not None]
+        major_matched = major_pred_rstindx.iloc[indexes_nonull]
+        #major_matched = major_pred_rstindx.take(indexes_nonull)
 
         if drop_unmatched == True:
-            if len(indexes[:, 1]) == len(list(filter(None, indices_for_match))):
+
+            valid_match_count = sum(1 for i in indices_for_match if i is not None)
+            if len(indexes[:, 1]) == valid_match_count:
                 pass
             else:
                 warnings.warn('Some values do not have a match. These are dropped for purposes of establishing a matched dataframe, and subsequent calculations and plots (effect size). If you do not wish this to be the case please set drop_unmatched=False')
@@ -374,7 +385,8 @@ class PsmPy:
             self.matched_ids = matched_ids_nona.reset_index(drop=True)
 
         else:
-            if len(indexes[:, 1]) == len(list(filter(None, indices_for_match))):
+            valid_match_count = sum(1 for i in indices_for_match if i is not None)
+            if len(indexes[:, 1]) == valid_match_count:
                 pass
             else:
                 warnings.warn(
@@ -385,7 +397,7 @@ class PsmPy:
             minor_pred_rstindx['matched_ID'] = ID_match
             self.matched_ids = minor_pred_rstindx[[self.indx, 'matched_ID']]
 
-    def knn_matched_12n(self, matcher='propensity_logit', how_many=1):
+    def kdtree_matched_12n(self, matcher='propensity_logit', how_many=1):
         """
         knn_matched_12n -- Match data using k-nn algorithm to sample 1:selected_number
         Parameters
@@ -423,10 +435,14 @@ class PsmPy:
         # indexes for match needs to keep all those tagged from all loops so must be instantiated outside the loop
         for many in range(how_many):
             # need to fit KNN with larger class
-            knn = NearestNeighbors(n_neighbors=len(major_pred_rstindx), p=2)
-            knn.fit(major_pred_rstindx[[matcher]].to_numpy())
-            distances, indexes = knn.kneighbors(
-                minor_pred_rstindx[[matcher]].to_numpy(), n_neighbors=len(major_pred_rstindx))
+            X_major = major_pred_rstindx[[matcher]].to_numpy()         
+            X_minor = minor_pred_rstindx[[matcher]].to_numpy()          
+            tree = KDTree(X_major, leaf_size=40, metric='euclidean')
+            distances, indexes = tree.query(X_minor, k=len(major_pred_rstindx), return_distance=True)
+            # knn = NearestNeighbors(n_neighbors=len(major_pred_rstindx), p=2)
+            # knn.fit(major_pred_rstindx[[matcher]].to_numpy())
+            # distances, indexes = knn.kneighbors(
+            #     minor_pred_rstindx[[matcher]].to_numpy(), n_neighbors=len(major_pred_rstindx))
 #             self.distances = distances
 #             self.indexes = indexes
 
