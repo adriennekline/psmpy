@@ -96,7 +96,7 @@ psm.predicted_data
 Perform KNN matching
 
 ```python
-psm.knn_matched(matcher='propensity_logit', replacement=False, caliper=None)
+psm.kdtree_matched(matcher='propensity_logit', replacement=False, caliper=None)
 ```
 
 **Note:**
@@ -112,7 +112,7 @@ psm.knn_matched(matcher='propensity_logit', replacement=False, caliper=None)
 Perform KNN matching 1:many 
 
 ```python
-psm.knn_matched_12n(matcher='propensity_logit', how_many=1)
+psm.kdtree_matched_12n(matcher='propensity_logit', how_many=1)
 ```
 
 **Note:**
@@ -289,3 +289,4 @@ cohenD(df, treatment, metricName)
 
 # Conclusion
 This package offers a user friendly propensity score matching protocol created for a Python environment. In this we have tried to capture automatic figure generation, contextualization of the results and flexibility in the matching and modeling protocol to serve a wide base. 
+
